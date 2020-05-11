@@ -1,0 +1,119 @@
+Turbo Assembler	 Version 4.1	    02/25/20 17:17:20	    Page 1
+memcmp.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4
+      5	0100			     start:
+      6	0100  E8 0028				     call print
+      7	0103  BE 011Dr				     mov si, offset string1
+      8	0106  BF 0124r				     mov di, offset string2
+      9	0109  B9 0002				     mov cx, 2
+     10	010C  E8 002B				     call memcmp
+     11
+     12	010F  B4 02				     mov ah, 02h
+     13	0111  8A D0				     mov dl, al
+     14	0113  80 C2 3D				     add dl, 61
+     15	0116  CD 21				     int 21h
+     16
+     17	0118  B8 4C00				     mov ax, 4c00h
+     18	011B  CD 21				     int 21h
+     19
+     20	011D  6D 69 70 74 0A 0D	24   string1:	     db	'mipt',	10, 13,	'$'
+     21	0124  6D 49 50 54 0A 0D	24   string2:	     db	'mIPT',	10, 13,	'$'
+     22				     ;-----------------------------------------------
+     23	012B			     print	     proc
+     24	012B  BA 011Dr				     mov dx, offset string1
+     25	012E  B4 09				     mov ah, 09h
+     26	0130  CD 21				     int 21h
+     27
+     28	0132  BA 0124r				     mov dx, offset string2
+     29	0135  B4 09				     mov ah, 09h
+     30	0137  CD 21				     int 21h
+     31	0139  C3				     ret
+     32	013A					     endp
+     33
+     34				     ;-----------------------------------------------------
+     35				     ;	     Compare two blocks	of memory
+     36				     ;	     Entry:  CX	     number of bytes to	compare
+     37				     ;		     SI	     pointer to	the first  block memory
+     38				     ;		     DI	     pointer to	the second block memory
+     39				     ;-----------------------------------------------------
+     40				     ;	     Ret:    AL	      0	if equal
+     41				     ;			     >0	if first block has a greater then second
+     42				     ;			     <0	if first block has a lower then	second
+     43				     ;-----------------------------------------------------
+     44				     ;	     Destr:  SI	DI CX AX ES
+     45				     ;-----------------------------------------------------
+     46	013A			     memcmp	     proc
+     47	013A  8C D8				     mov ax, ds
+     48	013C  8E C0				     mov es, ax
+     49	013E  83 F9 00				     cmp cx, 0
+     50	0141  76 07				     jbe  @@end_memcmp
+     51
+     52	0143				     @@start_loop:
+     53	0143  A6				     cmpsb
+     54	0144  75 05				     jne @@check_cmp
+     55	0146  E2 FB				     loop @@start_loop
+     56	0148  32 C0				     xor al, al
+     57	014A				     @@end_memcmp:
+Turbo Assembler	 Version 4.1	    02/25/20 17:17:20	    Page 2
+memcmp.asm
+
+
+
+     58	014A  C3				     ret
+     59
+     60	014B				     @@check_cmp:
+     61	014B  77 04				     ja	@@above
+     62	014D  B0 FF				     mov al, -1
+     63	014F  EB F9				     jmp @@end_memcmp
+     64	0151				     @@above:
+     65	0151  B0 01				     mov al, 1
+     66	0153  EB F5				     jmp @@end_memcmp
+     67	0155					     endp
+     68
+     69				     end	     start
+Turbo Assembler	 Version 4.1	    02/25/20 17:17:20	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/25/20"
+??FILENAME			  Text	 "memcmp  "
+??TIME				  Text	 "17:17:20"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@@ABOVE				  Near	 DGROUP:0151
+@@CHECK_CMP			  Near	 DGROUP:014B
+@@END_MEMCMP			  Near	 DGROUP:014A
+@@START_LOOP			  Near	 DGROUP:0143
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 MEMCMP
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+MEMCMP				  Near	 DGROUP:013A
+PRINT				  Near	 DGROUP:012B
+START				  Near	 DGROUP:0100
+STRING1				  Near	 DGROUP:011D
+STRING2				  Near	 DGROUP:0124
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  0155 Word	  Public  CODE
+

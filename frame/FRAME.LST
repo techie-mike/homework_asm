@@ -1,0 +1,323 @@
+Turbo Assembler	 Version 4.1	    02/21/20 21:51:19	    Page 1
+frame.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4
+      5				     include func.asm
+1     6				     .getch	     macro
+1     7						     nop
+1     8						     xor ah, ah
+1     9						     int 16h
+1    10						     nop
+1    11						     endm
+1    12				     ;------------------------------------
+1    13
+1    14				     .shadows	     macro
+1    15						     mov byte ptr es:[bx], 01010000b
+1    16						     endm
+1    17
+1    18	      =0040		     color_shadows   equ     01000000b
+1    19
+1    20	      =0030		     color_backgrownd	     equ     00110000b
+     21
+     22
+     23				     ;--------------------------------------------------------
+     24	      =B800		     video_segment equ 0b800h
+     25
+     26				     ;-----------------	start main program ------------------- ;
+     27	0100			     start:
+     28	0100  B5 0A				     mov ch, 10	     ; vertical	position
+     29	0102  B1 05				     mov cl, 5	     ; gorizontal position
+     30
+     31	0104  E8 001C				     call calculation_bx_pointer
+     32
+     33	0107  B6 0F				     mov dh, 15	     ; end vertical position
+     34	0109  B2 28				     mov dl, 40	     ; end gorizontal position
+     35	010B  2A F5				     sub dh, ch
+     36	010D  2A D1				     sub dl, cl
+     37
+     38	010F  E8 002F				     call draw_frame
+     39	0112  E8 0089				     call draw_shadows
+     40	0115  E8 00D5				     call draw_angle
+     41
+     42						     .getch
+1    43	0118  90				     nop
+1    44	0119  32 E4				     xor ah, ah
+1    45	011B  CD 16				     int 16h
+1    46	011D  90				     nop
+     47	011E  B8 4C00				     mov ax, 4c00h
+     48	0121  CD 21				     int 21h
+     49				     ;--------------- end main program ----------------------- ;
+     50
+     51	0123				     calculation_bx_pointer proc
+     52	0123  B8 B800				     mov ax, video_segment
+     53	0126  8E C0				     mov es, ax
+     54
+     55	0128  B8 0050				     mov ax, 80
+     56	012B  F6 E5				     mul ch
+     57
+Turbo Assembler	 Version 4.1	    02/21/20 21:51:19	    Page 2
+frame.asm
+
+
+
+     58	012D  8B D8				     mov bx, ax
+     59	012F  B8 0000				     mov ax, 0
+     60	0132  8A C1				     mov al, cl
+     61	0134  03 D8				     add bx, ax
+     62
+     63	0136  B8 0002				     mov ax, 2
+     64	0139  F7 E3				     mul bx
+     65	013B  8B D8				     mov bx, ax
+     66	013D  83 C3 00				     add bx, 0
+     67
+     68	0140  C3				     ret
+     69	0141				     calculation_bx_pointer endp
+     70				     ;--------------------------------------------------------
+     71
+     72	0141				     draw_frame	proc
+     73	0141  B4 00				     mov ah, 0	     ; byte for	height
+     74	0143				     big_for:
+     75	0143  B0 00				     mov al, 0	     ; byte for	width
+     76
+     77	0145  3A E6				     cmp ah, dh
+     78	0147  77 16				     ja	end_big_for
+     79
+     80	0149				     small_for:
+     81	0149  3A C2				     cmp al, dl
+     82	014B  77 0D				     ja	end_small_for
+     83
+     84	014D  E8 0030				     call create_frame
+     85	0150  E8 0093				     call draw_background
+     86	0153  83 C3 02				     add bx, 2
+     87	0156  FE C0				     inc al
+     88
+     89	0158  EB EF				     jmp small_for
+     90
+     91	015A				     end_small_for:
+     92	015A  E8 000F				     call newline
+     93	015D  EB E4				     jmp big_for
+     94
+     95	015F				     end_big_for:
+     96	015F  81 EB 00A0			     sub bx, 160
+     97	0163  8A C2				     mov al, dl
+     98	0165  B4 00				     mov ah, 0
+     99	0167  03 D8				     add bx, ax
+    100	0169  03 D8				     add bx, ax
+    101	016B  C3				     ret
+    102	016C				     draw_frame	endp
+    103				     ;--------------------------------------------------------
+    104
+    105	016C				     newline proc
+    106	016C  8A C6				     mov al, dh
+    107	016E  B6 00				     mov dh, 0
+    108
+    109	0170  2B DA				     sub bx, dx
+    110	0172  2B DA				     sub bx, dx
+    111	0174  83 EB 02				     sub bx, 2
+    112
+    113	0177  8A F0				     mov dh, al
+    114	0179  81 C3 00A0			     add bx, 80	* 2
+Turbo Assembler	 Version 4.1	    02/21/20 21:51:19	    Page 3
+frame.asm
+
+
+
+    115	017D  FE C4				     inc ah
+    116	017F  C3				     ret
+    117	0180				     newline endp
+    118				     ;--------------------------------------------------------
+    119	0180				     create_frame proc
+    120	0180  3C 00				     cmp al, 0
+    121	0182  74 0E				     je	vertical_frame
+    122
+    123	0184  3A C2				     cmp al, dl
+    124	0186  74 0A				     je	vertical_frame
+    125
+    126	0188  3A E6				     cmp ah, dh
+    127	018A  74 0C				     je	gorizontal_frame
+    128
+    129	018C  80 FC 00				     cmp ah, 0
+    130	018F  74 07				     je	gorizontal_frame
+    131
+    132	0191				     end_create:
+    133	0191  C3				     ret
+    134
+    135	0192				     vertical_frame:
+    136	0192  26: C6 07	BA			     mov byte ptr es:[bx], 186
+    137	0196  EB F9				     jmp end_create
+    138
+    139	0198				     gorizontal_frame:
+    140	0198  26: C6 07	CD			     mov byte ptr es:[bx], 205
+    141	019C  EB F3				     jmp end_create
+    142	019E				     create_frame endp
+    143				     ;--------------------------------------------------------
+    144				     ;	     Draw all shadows of frame
+    145				     ;	     Entry:  DH	- vertiacal position of	right buttom angle frame
+    146				     ;		     DL	- gorizontal position of right buttom angle frame
+    147	019E				     draw_shadows proc
+    148	019E  B0 A0				     mov al, 160
+    149	01A0  F6 E6				     mul dh
+    150	01A2  2B D8				     sub bx, ax
+    151	01A4  81 C3 00A3			     add bx, 163
+    152	01A8  B4 00				     mov ah, 0
+    153
+    154	01AA				     loop_draw_shadows_side:
+    155	01AA  3A E6				     cmp ah, dh
+    156	01AC  77 13				     ja	end_loop_draw_shadows_side
+    157									     ; fucking copying
+    158
+    159	01AE  26: C6 07	40			     mov byte ptr es:[bx], color_shadows
+    160	01B2  83 C3 02				     add bx, 2
+    161	01B5  26: C6 07	40			     mov byte ptr es:[bx], color_shadows
+    162
+    163	01B9  81 C3 009E			     add bx, 158
+    164
+    165	01BD  FE C4				     inc ah
+    166	01BF  EB E9				     jmp loop_draw_shadows_side
+    167
+    168	01C1				     end_loop_draw_shadows_side:
+    169	01C1  81 EB 00A2			     sub bx, 160 + 2
+    170
+    171	01C5  8A C2				     mov al, dl
+Turbo Assembler	 Version 4.1	    02/21/20 21:51:19	    Page 4
+frame.asm
+
+
+
+    172	01C7  02 C2				     add al, dl
+    173	01C9  B4 00				     mov ah, 0
+    174	01CB  2B D8				     sub bx, ax
+    175	01CD  83 C3 04				     add bx, 4
+    176
+    177	01D0  B0 02				     mov al, 2
+    178	01D2				     loop_draw_shadows_bottom:
+    179	01D2  3A C2				     cmp al, dl
+    180	01D4  77 0B				     ja	end_loop_shadows_bottom
+    181	01D6  26: C6 07	40			     mov byte ptr es:[bx], color_shadows
+    182	01DA  83 C3 02				     add bx, 2
+    183	01DD  FE C0				     inc al
+    184	01DF  EB F1				     jmp loop_draw_shadows_bottom
+    185
+    186	01E1				     end_loop_shadows_bottom:
+    187	01E1  81 EB 00A3			     sub bx, 160 + 3
+    188	01E5  C3				     ret
+    189	01E6				     draw_shadows endp
+    190				     ;--------------------------------------------------------
+    191
+    192	01E6				     draw_background proc
+    193	01E6  43				     inc bx
+    194	01E7  26: C6 07	30			     mov byte ptr es:[bx], color_backgrownd
+    195	01EB  4B				     dec bx
+    196	01EC  C3				     ret
+    197	01ED				     draw_background endp
+    198
+    199				     ;--------------------------------------------------------
+    200				     ;	     Draw a angle of frame
+    201				     ;	     Entry:  BX	- adrr of cusrsor on screen
+    202				     ;--------------------------------------------------------
+    203				     ;	     Destr:  BX	CX
+    204				     ;--------------------------------------------------------
+    205	01ED				     draw_angle	proc
+    206	01ED  8B CA				     mov cx, dx
+    207	01EF  26: C6 07	BC			     mov byte ptr es:[bx], 188
+    208
+    209	01F3  E8 0015				     call offset_for_height
+    210	01F6  26: C6 07	BB			     mov byte ptr es:[bx], 187
+    211	01FA  03 D8				     add bx, ax
+    212
+    213	01FC  E8 0014				     call offset_for_width
+    214	01FF  26: C6 07	C8			     mov byte ptr es:[bx], 200
+    215
+    216	0203  E8 0005				     call offset_for_height
+    217	0206  26: C6 07	C9			     mov byte ptr es:[bx], 201
+    218	020A  C3				     ret
+    219	020B				     draw_angle	endp
+    220				     ;--------------------------------------------------------
+    221
+    222	020B				     offset_for_height proc
+    223	020B  B8 00A0				     mov ax, 160
+    224	020E  F6 E5				     mul ch
+    225	0210  2B D8				     sub bx, ax
+    226	0212  C3				     ret
+    227	0213				     offset_for_height endp
+    228				     ;--------------------------------------------------------
+Turbo Assembler	 Version 4.1	    02/21/20 21:51:19	    Page 5
+frame.asm
+
+
+
+    229
+    230	0213				     offset_for_width proc
+    231	0213  8A C1				     mov al, cl
+    232	0215  B4 00				     mov ah, 0
+    233	0217  2B D8				     sub bx, ax
+    234	0219  2B D8				     sub bx, ax
+    235	021B  C3				     ret
+    236	021C				     offset_for_width endp
+    237				     ;--------------------------------------------------------
+    238				     end     start
+Turbo Assembler	 Version 4.1	    02/21/20 21:51:19	    Page 6
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/21/20"
+??FILENAME			  Text	 "frame	  "
+??TIME				  Text	 "21:51:18"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 FRAME
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+BIG_FOR				  Near	 DGROUP:0143
+CALCULATION_BX_POINTER		  Near	 DGROUP:0123
+COLOR_BACKGROWND		  Number 0030
+COLOR_SHADOWS			  Number 0040
+CREATE_FRAME			  Near	 DGROUP:0180
+DRAW_ANGLE			  Near	 DGROUP:01ED
+DRAW_BACKGROUND			  Near	 DGROUP:01E6
+DRAW_FRAME			  Near	 DGROUP:0141
+DRAW_SHADOWS			  Near	 DGROUP:019E
+END_BIG_FOR			  Near	 DGROUP:015F
+END_CREATE			  Near	 DGROUP:0191
+END_LOOP_DRAW_SHADOWS_SIDE	  Near	 DGROUP:01C1
+END_LOOP_SHADOWS_BOTTOM		  Near	 DGROUP:01E1
+END_SMALL_FOR			  Near	 DGROUP:015A
+GORIZONTAL_FRAME		  Near	 DGROUP:0198
+LOOP_DRAW_SHADOWS_BOTTOM	  Near	 DGROUP:01D2
+LOOP_DRAW_SHADOWS_SIDE		  Near	 DGROUP:01AA
+NEWLINE				  Near	 DGROUP:016C
+OFFSET_FOR_HEIGHT		  Near	 DGROUP:020B
+OFFSET_FOR_WIDTH		  Near	 DGROUP:0213
+SMALL_FOR			  Near	 DGROUP:0149
+START				  Near	 DGROUP:0100
+VERTICAL_FRAME			  Near	 DGROUP:0192
+VIDEO_SEGMENT			  Number B800
+
+Macro Name
+
+.GETCH
+.SHADOWS
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  021C Word	  Public  CODE
+

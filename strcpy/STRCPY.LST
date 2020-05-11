@@ -1,0 +1,105 @@
+Turbo Assembler	 Version 4.1	    02/28/20 23:31:39	    Page 1
+strcpy.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3
+      4				     locals @@
+      5				     org 100h
+      6	0100  E8 0031		     start:	     call print
+      7	0103  BF 0124r				     mov di, offset string1 + 13
+      8	0106  BE 012Dr				     mov si, offset string2
+      9	0109  E8 0030				     call strcpy
+     10
+     11	010C  BF 0117r				     mov di, offset string1
+     12
+     13	010F  E8 0022				     call print
+     14
+     15	0112  B8 4C00				     mov ax, 4c00h
+     16	0115  CD 21				     int 21h
+     17
+     18	0117  49 20 77 61 6E 74	20+  string1:	     db	'I want	to go win10   $'
+     19	      74 6F 20 67 6F 20	77+
+     20	      69 6E 31 30 20 20	20+
+     21	      24
+     22	012D  6C 69 6E 75 78 21	24   string2:	     db	'linux!$'
+     23
+     24	0134			     print	     proc
+     25	0134  BA 0117r				     mov dx, offset string1
+     26	0137  B4 09				     mov ah, 09h
+     27	0139  CD 21				     int 21h
+     28	013B  C3				     ret
+     29	013C					     endp
+     30
+     31
+     32				     ;--------------------------------------------------------------
+     33				     ;	     Copies the	string pointed by SI into the array pointed
+     34				     ;	     by	DI, including the terminating last character ($)
+     35				     ;	     Entry:  SI	     pointer to	the copies string
+     36				     ;		     DI	     pointer to	the copy space
+     37				     ;--------------------------------------------------------------
+     38				     ;	     Ret:    DI	     pointer to	the copy space
+     39				     ;--------------------------------------------------------------
+     40				     ;	     Destr:  BX	ES AL
+     41				     ;--------------------------------------------------------------
+     42	013C			     strcpy	     proc
+     43	013C  8C DB				     mov bx, ds
+     44	013E  8E C3				     mov es, bx
+     45
+     46	0140  B0 24				     mov al, '$'
+     47	0142  8B DF				     mov bx, di
+     48	0144				     @@start_loop:
+     49	0144  A4				     movsb
+     50	0145  3A 04				     cmp al, byte ptr ds:[si]
+     51	0147  75 FB				     jne @@start_loop
+     52
+     53	0149  8B FB				     mov di, bx
+     54
+     55	014B  C3				     ret
+     56	014C					     endp
+     57
+Turbo Assembler	 Version 4.1	    02/28/20 23:31:39	    Page 2
+strcpy.asm
+
+
+
+     58				     end	     start
+Turbo Assembler	 Version 4.1	    02/28/20 23:31:39	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/28/20"
+??FILENAME			  Text	 "strcpy  "
+??TIME				  Text	 "23:31:39"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@@START_LOOP			  Near	 DGROUP:0144
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 STRCPY
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+PRINT				  Near	 DGROUP:0134
+START				  Near	 DGROUP:0100
+STRCPY				  Near	 DGROUP:013C
+STRING1				  Near	 DGROUP:0117
+STRING2				  Near	 DGROUP:012D
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  014C Word	  Public  CODE
+

@@ -1,0 +1,89 @@
+Turbo Assembler	 Version 4.1	    03/01/20 09:07:58	    Page 1
+inter2.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4	0100			     start:
+      5	0100  33 C0				     xor ax, ax
+      6	0102  8E C0				     mov es, ax
+      7
+      8	0104  FA				     cli	     ; in this place disable interrupt
+      9	0105  BB 0024				     mov bx, 9*4
+     10	0108  8C C8				     mov ax, cs
+     11	010A  26: C7 07	0124r			     mov word ptr es:[bx], offset new09h
+     12	010F  26: 89 47	02			     mov word ptr es:[bx+2], ax
+     13
+     14	0113  FB				     sti	     ; return flag interrpur
+     15
+     16
+     17	0114  B4 31				     mov ah, 31h
+     18	0116  BA 0148r				     mov dx, offset theend
+     19	0119  D1 EA D1 EA D1 EA	D1+		     shr dx, 4
+     20	      EA
+     21	0121  42				     inc dx
+     22	0122  CD 21				     int 21h
+     23
+     24	0124			     new09h	     proc
+     25	0124  50 57 06				     push ax di	es
+     26	0127  BF B800				     mov di, 0b800h
+     27	012A  8E C7				     mov es, di
+     28	012C  BF 036C				     mov di, (5*80 + 38) * 2
+     29
+     30	012F  E4 60				     in	al, 60h
+     31	0131  B4 4E				     mov ah, 4eh
+     32
+     33	0133  AB				     stosw
+     34
+     35	0134  E4 61				     in	al, 61h
+     36	0136  8A E0				     mov ah, al
+     37	0138  0C 80				     or	al, 80h
+     38	013A  E6 61				     out 61h, al
+     39	013C  8A C4				     mov al, ah
+     40	013E  E6 61				     out 61h, al
+     41
+     42	0140  B0 20				     mov al, 20h
+     43	0142  E6 20				     out 20h, al
+     44
+     45	0144  07 5F 58				     pop es di ax
+     46	0147  CF				     iret
+     47
+     48	0148					     endp
+     49	0148			     theend:
+     50				     end	     start
+Turbo Assembler	 Version 4.1	    03/01/20 09:07:58	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/01/20"
+??FILENAME			  Text	 "inter2  "
+??TIME				  Text	 "09:07:58"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 INTER2
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+NEW09H				  Near	 DGROUP:0124
+START				  Near	 DGROUP:0100
+THEEND				  Near	 DGROUP:0148
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  0148 Word	  Public  CODE
+

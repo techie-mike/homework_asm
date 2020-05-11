@@ -1,0 +1,209 @@
+Turbo Assembler	 Version 4.1	    03/01/20 11:12:01	    Page 1
+speaker.asm
+
+
+
+      1
+      2	0000			     .model tiny
+      3				     locals
+      4
+      5				     ; Темп (в ударах в	минуту)
+      6	      =0078		     tempo   equ 120
+      7
+      8				     ; Таблица соответствия номеров полутонов обозначениям нот
+      9				     ; (в буквенной нотации), S	- диез
+     10	      =0000		     C	 equ 0	 ;"до"
+     11	      =0002		     D	 equ 2	 ;"ре"
+     12	      =0004		     E	 equ 4	 ;"ми"
+     13	      =0005		     F	 equ 5	 ;"фа"
+     14	      =0007		     G	 equ 7	 ;"соль"
+     15	      =0009		     A	 equ 9	 ;"ля"
+     16	      =000B		     B	 equ 11	 ;"си"
+     17	      =0001		     S	 equ 1	 ;#
+     18
+     19				     ;---------------------------------------------------------------
+     20				     ; play - воспроизведение ноты
+     21				     ;	 note =	номер полутона
+     22				     ;	 octave	= номер	октавы
+     23				     ;	 len = длительность для	размера	4/4 и заданного	темпа
+     24
+     25				     play macro	note,octave,len
+     26					 mov ax,octave shl 8 + note  ;начинаем играть ноту
+     27					 call play_note
+     28					 mov cx,4370/(tempo*len)     ;задержка
+     29					 call delay
+     30					 call stop_note		     ;выключаем	динамик
+     31				     endm
+     32
+     33	0000			     .code
+     34				     .startup
+1    35					     ORG     100h
+1    36	0100			     @Startup:
+     37					 ;воспроизведение ноты "ля" первой октавы
+     38					 ;play A,3,16
+     39					 ;play D,3,8
+     40					 play E,4,8
+1    41	0100  B8 0404			 mov ax,4 shl 8	+ E  ;начинаем играть ноту
+1    42	0103  E8 0023			 call play_note
+1    43	0106  B9 0004			 mov cx,4370/(tempo*8)	   ;задержка
+1    44	0109  E8 0043			 call delay
+1    45	010C  E8 0039			 call stop_note		     ;выключаем	динамик
+     46	010F  B9 0001			 mov cx, 4370/(tempo*30)
+     47	0112  E8 003A			 call delay
+     48					 play E,4,8
+1    49	0115  B8 0404			 mov ax,4 shl 8	+ E  ;начинаем играть ноту
+1    50	0118  E8 000E			 call play_note
+1    51	011B  B9 0004			 mov cx,4370/(tempo*8)	   ;задержка
+1    52	011E  E8 002E			 call delay
+1    53	0121  E8 0024			 call stop_note		     ;выключаем	динамик
+     54
+     55
+     56					 ;выход
+     57	0124  B8 4C00			 mov ax,4C00h
+Turbo Assembler	 Version 4.1	    03/01/20 11:12:01	    Page 2
+speaker.asm
+
+
+
+     58	0127  CD 21			 int 21h
+     59
+     60				     ;---------------------------------------------------------------
+     61				     ; play_note - начинает воспроизведение ноты
+     62				     ; вход:
+     63				     ;	 al = номер полутона внутри октавы (0..11)
+     64				     ;	 ah = номер октавы (3 =	первая фортепианная)
+     65				     ; выход:
+     66				     ;	 нет
+     67
+     68	0129			     play_note proc
+     69	0129  8A CC			 mov cl,ah	 ;cl = номер октавы
+     70	012B  98			 cbw		 ;ax = номер полутона *	2
+     71	012C  D1 E0			 shl ax,1
+     72	012E  BB 0000r			 lea bx,notes	 ;bx = @notes[номер полутона]
+     73	0131  03 D8			 add bx,ax
+     74	0133  B0 B6			 mov al,0B6h	 ;загрузка упраляющего слова таймера
+     75	0135  E6 43			 out 43h,al	 ;(меандер на 3-м канале)
+     76	0137  8B 07			 mov ax,[bx]	 ;ax = notes[номер полутона] * 2^номер октавы
+     77	0139  D3 E8			 shr ax,cl
+     78	013B  E6 42			 out 42h,al	 ;загрузка коэффициента	деления	в 3-й канал таймера
+     79	013D  8A C4			 mov al,ah
+     80	013F  E6 42			 out 42h,al
+     81	0141  E4 61			 in al,61h	 ;включение динамика
+     82	0143  0C 03			 or al,3
+     83	0145  E6 61			 out 61h,al
+     84	0147  C3			 ret
+     85	0148			     endp
+     86
+     87				     ;---------------------------------------------------------------
+     88				     ; stop_note - выключает динамик
+     89				     ; вход:
+     90				     ;	 нет
+     91				     ; выход:
+     92				     ;	 нет
+     93
+     94	0148			     stop_note proc
+     95	0148  E4 61			 in al,61h
+     96	014A  24 FE			 and al,not 1
+     97	014C  E6 61			 out 61h,al
+     98	014E  C3			 ret
+     99	014F			     endp
+    100
+    101				     ;---------------------------------------------------------------
+    102				     ; delay - задержка
+    103				     ; вход:
+    104				     ;	 cx = длительность задержки в 1/18 с (точнее - в 65536/1193180 с)
+    105				     ; выход:
+    106				     ;	 нет
+    107
+    108	014F			     delay proc
+    109	014F  33 C0			 xor ax,ax
+    110	0151  8E C0			 mov es,ax
+    111	0153			     @@1:
+    112	0153  26: A1 046C		 mov ax,es:[46Ch]
+    113	0157			     @@2:
+    114	0157  F4			 hlt
+Turbo Assembler	 Version 4.1	    03/01/20 11:12:01	    Page 3
+speaker.asm
+
+
+
+    115	0158  26: 3B 06	046C		 cmp ax,es:[46Ch]
+    116	015D  74 F8			 je @@2
+    117	015F  E2 F2			 loop @@1
+    118	0161  C3			 ret
+    119	0162			     endp
+    120
+    121	0162			     .const
+    122
+    123				     ; notes - таблица коэффициентов деления для октавы	0 (контроктавы)
+    124				     ;	 Коэффициенты деления для более	высоких	октав получаются
+    125				     ;	 путём умножения значений из таблицы на	2^(номер октавы)
+    126
+    127	0000			     notes:
+    128	0000  8E88			 dw 36488    ;C
+    129	0002  868D			 dw 34445    ;C#
+    130	0004  7EFF			 dw 32511    ;D
+    131	0006  77D1			 dw 30673    ;D#
+    132	0008  7120			 dw 28960    ;E
+    133	000A  6AC0			 dw 27328    ;F
+    134	000C  64CC			 dw 25804    ;F#
+    135	000E  5F1E			 dw 24350    ;G
+    136	0010  59C5			 dw 22981    ;G#
+    137	0012  54BE			 dw 21694    ;A
+    138	0014  4FF9			 dw 20473    ;A#
+    139	0016  4B7D			 dw 19325    ;B
+    140
+    141				     end
+1   142					     END @Startup
+Turbo Assembler	 Version 4.1	    03/01/20 11:12:01	    Page 4
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/01/20"
+??FILENAME			  Text	 "speaker "
+??TIME				  Text	 "11:12:01"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@@1				  Near	 DGROUP:0153
+@@2				  Near	 DGROUP:0157
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CONST
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 SPEAKER
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@STARTUP			  Near	 DGROUP:0100
+@WORDSIZE			  Text	 2
+A				  Number 0009
+B				  Number 000B
+C				  Number 0000
+D				  Number 0002
+DELAY				  Near	 DGROUP:014F
+E				  Number 0004
+F				  Number 0005
+G				  Number 0007
+NOTES				  Near	 DGROUP:0000
+PLAY_NOTE			  Near	 DGROUP:0129
+S				  Number 0001
+STOP_NOTE			  Near	 DGROUP:0148
+TEMPO				  Number 0078
+
+Macro Name
+
+PLAY
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  CONST				  16  0018 Word	  Public  DATA
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  0162 Word	  Public  CODE
+

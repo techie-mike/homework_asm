@@ -1,0 +1,96 @@
+Turbo Assembler	 Version 4.1	    02/24/20 20:06:35	    Page 1
+memset.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4				     local @@
+      5
+      6	0100			     start:
+      7	0100  E8 0026				     call print
+      8	0103  BB 0117r				     mov bx, offset string + 1
+      9	0106  B0 32				     mov al, 50
+     10	0108  B9 0005				     mov cx, 5
+     11
+     12	010B  E8 0023				     call memset
+     13
+     14	010E  E8 0018				     call print
+     15
+     16	0111  B8 4C00				     mov ax, 4c00h
+     17	0114  CD 21				     int 21h
+     18
+     19	0116  68 65 6C 6C 6F 2C	20+  string:	     db	'hello,	my friend', 10,	13, '$'
+     20	      6D 79 20 66 72 69	65+
+     21	      6E 64 0A 0D 24
+     22
+     23	0129			     print	     proc
+     24	0129  BA 0116r				     mov dx, offset string
+     25	012C  B4 09				     mov ah, 09h
+     26	012E  CD 21				     int 21h
+     27	0130  C3				     ret
+     28	0131					     endp
+     29
+     30				     ;--------------------------------------------------------
+     31				     ;	     Sets the first num	bytes of the block
+     32				     ;	     of	memory pointed by ptr to the specified value
+     33				     ;
+     34				     ;	     Entry:  BX	     memory point
+     35				     ;		     CX	     num bytes for filling
+     36				     ;		     AL	     value for filling
+     37				     ;--------------------------------------------------------
+     38				     ;	     Destr:  CX	BX
+     39				     ;--------------------------------------------------------
+     40	0131			     memset  proc
+     41	0131  83 F9 00				     cmp cx, 0
+     42	0134  76 05				     jbe @@end_memset
+     43
+     44	0136				     @@start_loop:
+     45	0136  88 07				     mov [bx], al
+     46	0138  43				     inc bx
+     47	0139  E2 FB				     loop @@start_loop
+     48	013B				     @@end_memset:
+     49	013B  C3				     ret
+     50	013C					     endp
+     51
+     52
+     53				     end	     start
+Turbo Assembler	 Version 4.1	    02/24/20 20:06:35	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/24/20"
+??FILENAME			  Text	 "memset  "
+??TIME				  Text	 "20:06:35"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@@				  Number [DGROUP:BP-0002]
+@@END_MEMSET			  Near	 DGROUP:013B
+@@START_LOOP			  Near	 DGROUP:0136
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 MEMSET
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+MEMSET				  Near	 DGROUP:0131
+PRINT				  Near	 DGROUP:0129
+START				  Near	 DGROUP:0100
+STRING				  Near	 DGROUP:0116
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  013C Word	  Public  CODE
+

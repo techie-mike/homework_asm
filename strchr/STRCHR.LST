@@ -1,0 +1,110 @@
+Turbo Assembler	 Version 4.1	    02/25/20 17:55:17	    Page 1
+strchr.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     local @@
+      4
+      5	      =0024		     end_symbol	     equ     36	     ; symbol '$'
+      6				     org 100h
+      7
+      8	0100  E8 0021		     start:	     call print
+      9	0103  BF 0116r				     mov di, offset string
+     10	0106  B0 2D				     mov al, '-'
+     11	0108  E8 0021				     call strchr
+     12
+     13	010B  C6 05 3D				     mov byte ptr [di],	'='
+     14	010E  E8 0013				     call print
+     15
+     16	0111  B8 4C00				     mov ax, 4c00h
+     17	0114  CD 21				     int 21h
+     18	0116  4D 69 70 74 20 2D	20+  string:	     db	'Mipt -	top!', 10, 13,'$'
+     19	      74 6F 70 21 0A 0D	24
+     20
+     21
+     22	0124			     print	     proc
+     23	0124  BA 0116r				     mov dx, offset string
+     24	0127  B4 09				     mov ah, 09h
+     25	0129  CD 21				     int 21h
+     26	012B  C3				     ret
+     27	012C					     endp
+     28				     ;-----------------------------------------------------
+     29				     ;	     Finds the first occurrence	of a character
+     30				     ;	     of	a string (last symbol '$')
+     31				     ;	     Entry:  DI	     pointer to	the string
+     32				     ;		     AL	     searching character
+     33				     ;-----------------------------------------------------
+     34				     ;	     Ret:    DI	     the first occurrence of a character
+     35				     ;			     or	'0' if don't found
+     36				     ;-----------------------------------------------------
+     37				     ;	     Destr:  ES	bx
+     38				     ;-----------------------------------------------------
+     39	012C			     strchr	     proc
+     40	012C  8C DB				     mov bx, ds
+     41	012E  8E C3				     mov es, bx
+     42
+     43	0130  B4 24				     mov ah, end_symbol
+     44	0132				     @@start_loop:
+     45	0132  AE				     scasb
+     46	0133  74 09				     je	@@go_ret
+     47
+     48	0135  38 25				     cmp byte ptr [di],	ah
+     49	0137  74 02				     je	@@end_loop
+     50
+     51	0139  EB F7				     jmp @@start_loop
+     52	013B				     @@end_loop:
+     53	013B  33 FF				     xor di, di
+     54	013D  C3				     ret
+     55	013E				     @@go_ret:
+     56	013E  4F				     dec di
+     57	013F  C3				     ret
+Turbo Assembler	 Version 4.1	    02/25/20 17:55:17	    Page 2
+strchr.asm
+
+
+
+     58	0140					     endp
+     59
+     60				     end	     start
+Turbo Assembler	 Version 4.1	    02/25/20 17:55:17	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/25/20"
+??FILENAME			  Text	 "strchr  "
+??TIME				  Text	 "17:55:17"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@@				  Number [DGROUP:BP-0002]
+@@END_LOOP			  Near	 DGROUP:013B
+@@GO_RET			  Near	 DGROUP:013E
+@@START_LOOP			  Near	 DGROUP:0132
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 STRCHR
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+END_SYMBOL			  Number 0024
+PRINT				  Near	 DGROUP:0124
+START				  Near	 DGROUP:0100
+STRCHR				  Near	 DGROUP:012C
+STRING				  Near	 DGROUP:0116
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  0140 Word	  Public  CODE
+

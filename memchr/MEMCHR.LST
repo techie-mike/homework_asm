@@ -1,0 +1,110 @@
+Turbo Assembler	 Version 4.1	    02/25/20 17:46:12	    Page 1
+memchr.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4
+      5	0100			     start:
+      6	0100  E8 0017				     call print
+      7
+      8	0103  BF 0122r				     mov di, offset string
+      9	0106  A0 0135r				     mov al, byte ptr symbol
+     10	0109  B9 0005				     mov cx, 5
+     11	010C  E8 0027				     call memchr
+     12
+     13	010F  C6 07 69				     mov byte ptr [bx],	'i'
+     14	0112  E8 0005				     call print
+     15
+     16	0115  B8 4C00				     mov ax, 4c00h
+     17	0118  CD 21				     int 21h
+     18
+     19	011A			     print	     proc
+     20	011A  BA 0122r				     mov dx, offset string
+     21	011D  B4 09				     mov ah, 09h
+     22	011F  CD 21				     int 21h
+     23	0121  C3				     ret
+     24	0122					     endp
+     25
+     26	0122  6C 6F 76 65 20 70	72+  string:	     db	'love programming', 10,	13, '$'
+     27	      6F 67 72 61 6D 6D	69+
+     28	      6E 67 0A 0D 24
+     29	0135  6F		     symbol:	     db	'o'
+     30
+     31				     ;-----------------------------------------------------
+     32				     ;	     Search first occurrence in	first CX bytes of
+     33				     ;	     the character BL from pointer SI
+     34				     ;	     Entry:  AL	     searching character
+     35				     ;		     CX	     number of bytes to	copy
+     36				     ;		     DI	     pointer to	the source of data
+     37				     ;-----------------------------------------------------
+     38				     ;	     Ret:    BX	     addr of first occurrence of the character
+     39				     ;			     or	NULL if	this don't found
+     40				     ;-----------------------------------------------------
+     41				     ;	     Destr:  DI	CX
+     42				     ;-----------------------------------------------------
+     43	0136			     memchr	     proc
+     44	0136  33 DB				     xor bx, bx
+     45	0138  83 F9 00				     cmp cx, 0
+     46	013B  76 05				     jbe  @@end_memchr
+     47
+     48	013D				     @@start_loop:
+     49	013D  AE				     scasb
+     50	013E  74 03				     je	@@assignment
+     51	0140  E2 FB				     loop @@start_loop
+     52	0142				     @@end_memchr:
+     53	0142  C3				     ret
+     54	0143				     @@assignment:
+     55	0143  4F				     dec di
+     56	0144  8B DF				     mov bx, di
+     57	0146  EB FA				     jmp @@end_memchr
+Turbo Assembler	 Version 4.1	    02/25/20 17:46:12	    Page 2
+memchr.asm
+
+
+
+     58	0148					     endp
+     59
+     60
+     61				     end	     start
+Turbo Assembler	 Version 4.1	    02/25/20 17:46:12	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/25/20"
+??FILENAME			  Text	 "memchr  "
+??TIME				  Text	 "17:46:12"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@@ASSIGNMENT			  Near	 DGROUP:0143
+@@END_MEMCHR			  Near	 DGROUP:0142
+@@START_LOOP			  Near	 DGROUP:013D
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 MEMCHR
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+MEMCHR				  Near	 DGROUP:0136
+PRINT				  Near	 DGROUP:011A
+START				  Near	 DGROUP:0100
+STRING				  Near	 DGROUP:0122
+SYMBOL				  Near	 DGROUP:0135
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  0148 Word	  Public  CODE
+

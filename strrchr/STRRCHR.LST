@@ -1,0 +1,180 @@
+Turbo Assembler	 Version 4.1	    02/28/20 19:38:42	    Page 1
+strrchr.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     locals @@
+      4				     org 100h
+      5
+      6	0100			     start:
+      7	0100  BA 0135r				     mov dx, offset string
+      8	0103  E8 0016				     call print
+      9
+     10	0106  BF 0135r				     mov di, offset string
+     11	0109  B0 70				     mov al, 'p'
+     12	010B  E8 0016				     call strrchr
+     13
+     14	010E  C6 05 20				     mov byte ptr ds:[di], 32
+     15
+     16	0111  BA 0135r				     mov dx, offset string
+     17	0114  E8 0005				     call print
+     18	0117  B8 4C00				     mov ax, 4c00h
+     19	011A  CD 21				     int 21h
+     20
+     21	011C			     print	     proc
+     22	011C  BA 0135r				     mov dx, offset string
+     23	011F  B4 09				     mov ah, 09h
+     24	0121  CD 21				     int 21h
+     25	0123  C3				     ret
+     26	0124					     endp
+     27
+     28
+     29				     ;-----------------------------------------------------
+     30				     ;	     Finds the first occurrence	of a character
+     31				     ;	     of	end a string (last symbol '$')
+     32				     ;	     Entry:  DI	     pointer to	the string
+     33				     ;		     AL	     searching character
+     34				     ;-----------------------------------------------------
+     35				     ;	     Ret:    DI	     the first occurrence of a character
+     36				     ;			     or	'0' if don't found
+     37				     ;-----------------------------------------------------
+     38				     ;	     Destr:  ES	BX
+     39				     ;-----------------------------------------------------
+     40	0124			     strrchr	     proc
+     41	0124  8A E0				     mov ah, al
+     42	0126  E8 001C				     call strlen
+     43
+     44	0129  8A C4				     mov al, ah
+     45	012B  FD				     std
+     46						     ;	     mov di, offset string
+     47						     ;	     add di, cx
+     48	012C  4F				     dec di
+     49	012D  E8 0026				     call memchr
+     50	0130  FC				     cld
+     51	0131  83 C7 02				     add di, 2
+     52
+     53	0134  C3				     ret
+     54	0135					     endp
+     55
+     56	0135  70 70 70 70 20 4D	49+  string:	     db	'pppp MIpT   !', 10, 13, '$'
+     57	      70 54 20 20 20 21	0A+
+Turbo Assembler	 Version 4.1	    02/28/20 19:38:42	    Page 2
+strrchr.asm
+
+
+
+     58	      0D 24
+     59
+     60				     include	     func.asm
+1    61	      =0024		     end_symbol	     equ     36	     ; symbol '$'
+1    62
+1    63
+1    64				     ;-----------------------------------------------------
+1    65				     ;	     Finds the length of a string (last	symbol '$')
+1    66				     ;	     Entry:  DI	     pointer to	the string
+1    67				     ;-----------------------------------------------------
+1    68				     ;	     Ret:    CX	     the length	of the string
+1    69				     ;-----------------------------------------------------
+1    70				     ;	     Destr:  SI	BL ES AL DX
+1    71				     ;-----------------------------------------------------
+1    72	0145			     strlen	     proc
+1    73	0145  33 C9				     xor cx, cx
+1    74	0147  8C DA				     mov dx, ds
+1    75	0149  8E C2				     mov es, dx
+1    76
+1    77	014B  B0 24				     mov al, end_symbol
+1    78	014D				     @@start_loop:
+1    79	014D  AE				     scasb
+1    80	014E  74 02				     je	@@end_loop
+1    81	0150  E2 FB				     loop @@start_loop
+1    82	0152				     @@end_loop:
+1    83	0152  F7 D1				     not cx
+1    84	0154  41				     inc cx
+1    85	0155  C3				     ret
+1    86	0156					     endp
+1    87
+1    88
+1    89				     ;-----------------------------------------------------
+1    90				     ;	     Search first occurrence in	first CX bytes of
+1    91				     ;	     the character BL from pointer SI
+1    92				     ;	     Entry:  AL	     searching character
+1    93				     ;		     CX	     number of bytes to	check
+1    94				     ;		     DI	     pointer to	the source of data
+1    95				     ;-----------------------------------------------------
+1    96				     ;	     Ret:    BX	     addr of first occurrence of the character
+1    97				     ;			     or	NULL if	this don't found
+1    98				     ;-----------------------------------------------------
+1    99				     ;	     Destr:  DI	CX DX
+1   100				     ;-----------------------------------------------------
+1   101	0156			     memchr	     proc
+1   102	0156  8C DA				     mov dx, ds
+1   103	0158  8E C2				     mov es, dx
+1   104
+1   105	015A  33 DB				     xor bx, bx
+1   106	015C  83 F9 00				     cmp cx, 0
+1   107	015F  76 05				     jbe  @@end_memchr
+1   108
+1   109	0161				     @@start_loop:
+1   110	0161  AE				     scasb
+1   111	0162  74 03				     je	@@assignment
+1   112	0164  E2 FB				     loop @@start_loop
+1   113	0166				     @@end_memchr:
+1   114	0166  C3				     ret
+Turbo Assembler	 Version 4.1	    02/28/20 19:38:42	    Page 3
+strrchr.asm
+
+
+
+1   115	0167				     @@assignment:
+1   116	0167  4F				     dec di
+1   117	0168  8B DF				     mov bx, di
+1   118	016A  EB FA				     jmp @@end_memchr
+1   119	016C					     endp
+1   120
+    121
+    122				     end	     start
+Turbo Assembler	 Version 4.1	    02/28/20 19:38:42	    Page 4
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/28/20"
+??FILENAME			  Text	 "strrchr "
+??TIME				  Text	 "19:38:42"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@@ASSIGNMENT			  Near	 DGROUP:0167
+@@END_LOOP			  Near	 DGROUP:0152
+@@END_MEMCHR			  Near	 DGROUP:0166
+@@START_LOOP			  Near	 DGROUP:014D
+@@START_LOOP			  Near	 DGROUP:0161
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 STRRCHR
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+END_SYMBOL			  Number 0024
+MEMCHR				  Near	 DGROUP:0156
+PRINT				  Near	 DGROUP:011C
+START				  Near	 DGROUP:0100
+STRING				  Near	 DGROUP:0135
+STRLEN				  Near	 DGROUP:0145
+STRRCHR				  Near	 DGROUP:0124
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  016C Word	  Public  CODE
+

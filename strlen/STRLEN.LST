@@ -1,0 +1,96 @@
+Turbo Assembler	 Version 4.1	    02/25/20 17:30:07	    Page 1
+strlen.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     local @@
+      4
+      5	      =0024		     end_symbol	     equ     36	     ; symbol '$'
+      6				     org 100h
+      7
+      8	0100  E8 0020		     start:	     call print
+      9	0103  BF 0117r				     mov di, offset string
+     10	0106  E8 0022				     call strlen
+     11
+     12	0109  B4 02				     mov ah, 02h
+     13	010B  8A D1				     mov dl, cl
+     14	010D  80 C2 30				     add dl, 48
+     15	0110  CD 21				     int 21h
+     16
+     17	0112  B8 4C00				     mov ax, 4c00h
+     18	0115  CD 21				     int 21h
+     19	0117  4D 69 70 74 20 2D	20+  string:	     db	'Mipt -	top!$'
+     20	      74 6F 70 21 24
+     21
+     22
+     23	0123			     print	     proc
+     24	0123  BA 0117r				     mov dx, offset string
+     25	0126  B4 09				     mov ah, 09h
+     26	0128  CD 21				     int 21h
+     27	012A  C3				     ret
+     28	012B					     endp
+     29				     ;-----------------------------------------------------
+     30				     ;	     Finds the length of a string (last	symbol '$')
+     31				     ;	     Entry:  DI	     pointer to	the string
+     32				     ;-----------------------------------------------------
+     33				     ;	     Ret:    CX	     the length	of the string
+     34				     ;-----------------------------------------------------
+     35				     ;	     Destr:  SI	BL ES
+     36				     ;-----------------------------------------------------
+     37	012B			     strlen	     proc
+     38	012B  33 C9				     xor cx, cx
+     39	012D  8C D8				     mov ax, ds
+     40	012F  8E C0				     mov es, ax
+     41
+     42	0131  B0 24				     mov al, end_symbol
+     43	0133				     @@start_loop:
+     44	0133  AE				     scasb
+     45	0134  74 02				     je	@@end_loop
+     46	0136  E2 FB				     loop @@start_loop
+     47	0138				     @@end_loop:
+     48	0138  F7 D1				     not cx
+     49	013A  C3				     ret
+     50	013B					     endp
+     51
+     52				     end	     start
+Turbo Assembler	 Version 4.1	    02/25/20 17:30:07	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/25/20"
+??FILENAME			  Text	 "strlen  "
+??TIME				  Text	 "17:30:07"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@@				  Number [DGROUP:BP-0002]
+@@END_LOOP			  Near	 DGROUP:0138
+@@START_LOOP			  Near	 DGROUP:0133
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 STRLEN
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+END_SYMBOL			  Number 0024
+PRINT				  Near	 DGROUP:0123
+START				  Near	 DGROUP:0100
+STRING				  Near	 DGROUP:0117
+STRLEN				  Near	 DGROUP:012B
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  013B Word	  Public  CODE
+

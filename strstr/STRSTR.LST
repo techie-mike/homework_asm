@@ -1,0 +1,166 @@
+Turbo Assembler	 Version 4.1	    02/29/20 11:39:21	    Page 1
+strstr.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3
+      4	      =0024		     end_symbol_str  equ '$'
+      5				     locals @@
+      6				     org 100h
+      7	0100			     start:
+      8	0100  E8 0032				     call print
+      9	0103  E8 003C				     call print_search
+     10
+     11	0106  BF 0117r				     mov di, offset string
+     12	0109  BE 0131r				     mov si, offset search
+     13	010C  E8 0043				     call strstr
+     14
+     15
+     16	010F  E8 002B				     call print_rez
+     17	0112  B8 4C00				     mov ax, 4c00h
+     18	0115  CD 21				     int 21h
+     19
+     20	0117  4C 69 66 65 2C 20	70+  string:	     db	'Life, programs, cats...', 10, 13, '$'
+     21	      72 6F 67 72 61 6D	73+
+     22	      2C 20 63 61 74 73	2E+
+     23	      2E 2E 0A 0D 24
+     24	0131  63 61 74 24	     search:	     db	'cat$'
+     25
+     26	0135			     print	     proc
+     27	0135  B4 09				     mov ah, 09h
+     28	0137  BA 0117r				     mov dx, offset string
+     29	013A  CD 21				     int 21h
+     30	013C  C3				     ret
+     31	013D					     endp
+     32
+     33	013D			     print_rez	     proc
+     34	013D  B4 09				     mov ah, 09h
+     35	013F  CD 21				     int 21h
+     36	0141  C3				     ret
+     37	0142					     endp
+     38
+     39	0142			     print_search    proc
+     40	0142  B4 09				     mov ah, 09h
+     41	0144  BA 0131r				     mov dx, offset search
+     42	0147  CD 21				     int 21h
+     43	0149  BA 014Fr				     mov dx, offset end_str
+     44	014C  CD 21				     int 21h
+     45
+     46	014E  C3				     ret
+     47	014F					     endp
+     48
+     49	014F  0A 0D 24		     end_str:	     db	10, 13,	'$'
+     50				     ;--------------------------------------------------------
+     51				     ;	     Returns a pointer to the first occurrence of
+     52				     ;	     string SI in string DI, or	a null pointer if
+     53				     ;	     string SI is not part of string DI.
+     54				     ;	     Entry:  DI	     pointer to	the string
+     55				     ;		     SI	     string containing the sequence
+     56				     ;			     of	characters to match
+     57				     ;--------------------------------------------------------
+Turbo Assembler	 Version 4.1	    02/29/20 11:39:21	    Page 2
+strstr.asm
+
+
+
+     58				     ;	     Ret:    DX	     A pointer to the first occurrence
+     59				     ;			     in	DI of the entire sequence of
+     60				     ;			     characters	specified in SI, or
+     61				     ;			     a null pointer if the sequence
+     62				     ;			     is	not present in DI
+     63				     ;--------------------------------------------------------
+     64				     ;	     Destr:  ES	BX AX
+     65				     ;--------------------------------------------------------
+     66	0152			     strstr	     proc
+     67	0152  8C DB				     mov bx, ds
+     68	0154  8E C3				     mov es, bx
+     69	0156  33 D2				     xor dx, dx
+     70	0158  B4 24				     mov ah, end_symbol_str
+     71
+     72	015A  8B DE				     mov bx, si
+     73	015C  AC				     lodsb
+     74	015D				     @@start_loop:
+     75	015D  38 25				     cmp byte ptr ds:[di], ah	     ; if ([di]	== end_symbol)
+     76	015F  74 1B				     je	@@end_loop
+     77
+     78	0161  AE				     scasb			     ; if ([si]	== [di])
+     79	0162  75 F9				     jne @@start_loop
+     80	0164  8B D7				     mov dx, di
+     81	0166				     @@check_loop:
+     82	0166  AC				     lodsb
+     83						     ;cmp ah, byte ptr ds:[si]	      ;	if ([si] == end_symbol)
+     84	0167  3A E0				     cmp ah, al	       ; if ([si] == end_symbol)
+     85
+     86	0169  74 12				     je	@@good_ret
+     87
+     88	016B  3A 65 01				     cmp ah, byte ptr ds:[di+1]
+     89	016E  74 10				     je	@@bad_ret
+     90
+     91	0170  AE				     scasb			     ; if ([si]	== [di])
+     92	0171  74 F3				     je	@@check_loop
+     93
+     94	0173  8B FA				     mov di, dx			     ; else
+     95	0175  8B F3				     mov si, bx
+     96	0177  AC				     lodsb
+     97	0178  33 D2				     xor dx, dx
+     98	017A  EB E1				     jmp @@start_loop
+     99
+    100	017C				     @@end_loop:
+    101	017C  C3				     ret
+    102	017D				     @@good_ret:
+    103	017D  4A				     dec dx
+    104	017E  EB FC				     jmp @@end_loop
+    105	0180				     @@bad_ret:
+    106	0180  33 D2				     xor dx, dx
+    107	0182  EB F8				     jmp @@end_loop
+    108
+    109	0184					     endp
+    110
+    111				     end	     start
+Turbo Assembler	 Version 4.1	    02/29/20 11:39:21	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/29/20"
+??FILENAME			  Text	 "strstr  "
+??TIME				  Text	 "11:39:21"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@@BAD_RET			  Near	 DGROUP:0180
+@@CHECK_LOOP			  Near	 DGROUP:0166
+@@END_LOOP			  Near	 DGROUP:017C
+@@GOOD_RET			  Near	 DGROUP:017D
+@@START_LOOP			  Near	 DGROUP:015D
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 STRSTR
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+END_STR				  Near	 DGROUP:014F
+END_SYMBOL_STR			  Number 0024
+PRINT				  Near	 DGROUP:0135
+PRINT_REZ			  Near	 DGROUP:013D
+PRINT_SEARCH			  Near	 DGROUP:0142
+SEARCH				  Near	 DGROUP:0131
+START				  Near	 DGROUP:0100
+STRING				  Near	 DGROUP:0117
+STRSTR				  Near	 DGROUP:0152
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  0184 Word	  Public  CODE
+

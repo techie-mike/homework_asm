@@ -1,0 +1,110 @@
+Turbo Assembler	 Version 4.1	    03/01/20 11:47:48	    Page 1
+inter3.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4	0100			     start:
+      5	0100  33 C0				     xor ax, ax
+      6	0102  8E C0				     mov es, ax
+      7
+      8	0104  BB 0020				     mov bx, 8*4
+      9	0107  26: 8B 07				     mov ax, es:[bx]
+     10	010A  A3 0145r				     mov old09h, ax
+     11	010D  26: 8B 47	02			     mov ax, es:[bx+2]
+     12	0111  A3 0147r				     mov old09h	+ 2, ax
+     13
+     14
+     15	0114  8C C8				     mov ax, cs
+     16
+     17	0116  FA				     cli	     ; in this place disable interrupt
+     18
+     19	0117  26: C7 07	0131r			     mov word ptr es:[bx], offset new09h
+     20	011C  26: 89 47	02			     mov word ptr es:[bx+2], ax
+     21
+     22	0120  FB				     sti	     ; return flag interrpur
+     23
+     24
+     25	0121  B4 31				     mov ah, 31h
+     26	0123  BA 014Ar				     mov dx, offset theend
+     27	0126  D1 EA D1 EA D1 EA	D1+		     shr dx, 4
+     28	      EA
+     29	012E  42				     inc dx
+     30	012F  CD 21				     int 21h
+     31
+     32	0131			     new09h	     proc
+     33	0131  50 57 06				     push ax di	es
+     34	0134  BF B800				     mov di, 0b800h
+     35	0137  8E C7				     mov es, di
+     36	0139  BF 036C				     mov di, (5*80 + 38) * 2
+     37
+     38	013C  E4 60				     in	al, 60h
+     39						     ;mov al, cl
+     40	013E  B4 4E				     mov ah, 4eh
+     41
+     42	0140  AB				     stosw
+     43					     comment *
+     44						     in	al, 61h
+     45						     mov ah, al
+     46						     or	al, 80h
+     47						     out 61h, al
+     48						     mov al, ah
+     49						     out 61h, al
+     50
+     51						     mov al, 20h
+     52						     out 20h, al
+     53					     *
+     54	0141  07 5F 58				     pop es di ax
+     55	0144  EA				     db	0eah
+     56	0145  0000		     old09h	     dw	0
+     57	0147  0000				     dw	0
+Turbo Assembler	 Version 4.1	    03/01/20 11:47:48	    Page 2
+inter3.asm
+
+
+
+     58
+     59	0149  CF				     iret
+     60
+     61	014A					     endp
+     62
+     63
+     64	014A			     theend:
+     65				     end	     start
+Turbo Assembler	 Version 4.1	    03/01/20 11:47:48	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/01/20"
+??FILENAME			  Text	 "inter3  "
+??TIME				  Text	 "11:47:48"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 INTER3
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+NEW09H				  Near	 DGROUP:0131
+OLD09H				  Word	 DGROUP:0145
+START				  Near	 DGROUP:0100
+THEEND				  Near	 DGROUP:014A
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  014A Word	  Public  CODE
+

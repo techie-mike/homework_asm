@@ -1,0 +1,107 @@
+Turbo Assembler	 Version 4.1	    02/25/20 15:20:57	    Page 1
+memcpy.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4				     local @@
+      5
+      6	0100			     start:
+      7	0100  E8 0014				     call print
+      8
+      9	0103  BE 0136r				     mov si, offset string2
+     10	0106  BF 0128r				     mov di, offset string1 + 9
+     11	0109  B9 0008				     mov cx, 8
+     12	010C  E8 0030				     call memcpy
+     13
+     14	010F  E8 0005				     call print
+     15
+     16	0112  B8 4C00				     mov ax, 4c00h
+     17	0115  CD 21				     int 21h
+     18
+     19	0117			     print	     proc
+     20	0117  BA 011Fr				     mov dx, offset string1
+     21	011A  B4 09				     mov ah, 09h
+     22	011C  CD 21				     int 21h
+     23	011E  C3				     ret
+     24	011F					     endp
+     25
+     26	011F  48 65 6C 6C 6F 20	6D+  string1:		     db	'Hello my nerves     ',	10, 13,	'$'
+     27	      79 20 6E 65 72 76	65+
+     28	      73 20 20 20 20 20	0A+
+     29	      0D 24
+     30	0136  69 6E 73 6F 6D 6E	69+  string2:		     db	'insomnia', '$'
+     31	      61 24
+     32
+     33				     ;-----------------------------------------------------
+     34				     ;	     Copy first	CX bytes from pointer SI to pointer DI
+     35				     ;	     Entry:  CX	     number of bytes to	copy
+     36				     ;		     SI	     pointer to	the source of data
+     37				     ;		     DI	     pointer to	the destination
+     38				     ;-----------------------------------------------------
+     39				     ;	     Destr:  SI	DI CX BL
+     40				     ;-----------------------------------------------------
+     41	013F			     memcpy	     proc
+     42	013F  83 F9 00				     cmp cx, 0
+     43	0142  76 03				     jbe  @@end_memcpy
+     44
+     45	0144				     @@start_loop:
+     46					     comment ^
+     47						     mov bl, byte ptr [si]
+     48						     mov byte ptr [di],	bl
+     49						     inc di
+     50						     inc si
+     51						     ^
+     52	0144  A4				     movsb
+     53	0145  E2 FD				     loop @@start_loop
+     54	0147				     @@end_memcpy:
+     55	0147  C3				     ret
+     56	0148					     endp
+     57
+Turbo Assembler	 Version 4.1	    02/25/20 15:20:57	    Page 2
+memcpy.asm
+
+
+
+     58				     end	     start
+Turbo Assembler	 Version 4.1	    02/25/20 15:20:57	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/25/20"
+??FILENAME			  Text	 "memcpy  "
+??TIME				  Text	 "15:20:56"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@@				  Number [DGROUP:BP-0002]
+@@END_MEMCPY			  Near	 DGROUP:0147
+@@START_LOOP			  Near	 DGROUP:0144
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 MEMCPY
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+MEMCPY				  Near	 DGROUP:013F
+PRINT				  Near	 DGROUP:0117
+START				  Near	 DGROUP:0100
+STRING1				  Near	 DGROUP:011F
+STRING2				  Near	 DGROUP:0136
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  0148 Word	  Public  CODE
+

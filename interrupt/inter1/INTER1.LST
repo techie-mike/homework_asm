@@ -1,0 +1,50 @@
+Turbo Assembler	 Version 4.1	    02/29/20 13:04:48	    Page 1
+inter1.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4	0100			     start:
+      5	0100  B4 31				     mov ah, 31h
+      6	0102  BA 010Fr				     mov dx, offset TheEnd
+      7	0105  D1 EA D1 EA D1 EA	D1+		     shr dx, 4
+      8	      EA
+      9					     ;	     inc dx
+     10	010D  CD 21				     int 21h
+     11	010F			     TheEnd:
+     12				     end start
+Turbo Assembler	 Version 4.1	    02/29/20 13:04:48	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/29/20"
+??FILENAME			  Text	 "inter1  "
+??TIME				  Text	 "13:04:48"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 INTER1
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+START				  Near	 DGROUP:0100
+THEEND				  Near	 DGROUP:010F
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  010F Word	  Public  CODE
+
